@@ -1,4 +1,5 @@
 import pygame
+from random import randint
 
 FPS = 60
 clock = pygame.time.Clock()
@@ -52,6 +53,12 @@ class Player(pygame.sprite.Sprite):
 
         self.bullets = 0
 
+class Bullet ():
+    def __init__(self):
+        self.x = x
+        self.y = y
+        self.speed = 50
+
 
 def make_card():
     menu.delete_buttons()
@@ -72,6 +79,9 @@ if __name__ == '__main__':
     player = Player(100, 100, 'chelspistoletom.jpg')
 
     running = True
+    pistolIsonMap = True
+    pistolTaken = False
+    text_time = 0
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -85,14 +95,20 @@ if __name__ == '__main__':
                     elif event.key == pygame.K_SPACE:
                         menu.select()
             else:
-                text_time = 0
                 bullets_text = font.render(str(player.bullets), True, (0, 0, 0))
                 bullet_image = pygame.image.load("Bullet.png").convert_alpha()
+                pistol_image = pygame.image.load("pistol.png").convert_alpha()
                 bullet_image = pygame.transform.scale(bullet_image, (30, 30))
-                screen.blit(bullets_text, [850, 0])
+                screen.blit(bullets_text, [820, 0])
                 screen.blit(bullet_image, [870, 0])
                 screen.blit(player.image, player.rect)
                 keys = pygame.key.get_pressed()
+                if pistolIsonMap is True:
+                    pistol_image = pygame.transform.scale(pistol_image, (100, 100))
+                    x = randint(200, 600)
+                    y = randint(200, 600)
+                    screen.blit(pistol_image, [x, y])
+                    pistolIsonMap = False
                 if keys[pygame.K_w]:
                     player.rect.y -= 10
                 elif keys[pygame.K_s]:
@@ -104,11 +120,27 @@ if __name__ == '__main__':
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if player.bullets == 0:
                         i_need_more_bullets = font.render('I need more bullets!', True, (0, 0, 0))
-                        screen.blit(i_need_more_bullets, [player.rect[0], player.rect[1] - 50])
+                        text_cord = [player.rect[0], player.rect[1] - 50]
+                        print(text_cord)
+                        x1 = player.rect[0]
+                        y1 = player.rect[1] - 50
+                        x2 = player.rect[0] + 10
+                        y2 = player.rect[1]
+                        screen.blit(i_need_more_bullets, text_cord)
                         text_time = pygame.time.get_ticks()
+                    elif player.bullets > 0:
+                        bullet = Bullet()
+                if current_time - text_time > 1000 and text_time != 0:
+                    text_time = 0
+                    no_more_bullets = pygame.draw.rect(screen, (255, 255, 255), (0, 0, x2 + 400, y2))
+                    screen.blit(screen, no_more_bullets)
+                if -80 <= player.rect[0] - x <= 80 and -80 <= player.rect[1] - y <= 80 and pistolTaken is False:
+                    print('123')
+                    pistolTaken = True
+                    player.bullets += 30
+                    pygame.draw.rect(screen, (255, 255, 255), (820, 10, 850, 20))
+
                 current_time = pygame.time.get_ticks()
-
-
         pygame.display.update()
         menu.draw(screen, 100, 100, 75)
         clock.tick(FPS)
