@@ -51,13 +51,21 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.image.load(file).convert_alpha()
         self.rect = self.image.get_rect(center=(x, y))
 
-        self.bullets = 0
+        self.bullets = 10
 
-class Bullet ():
-    def __init__(self):
+
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load('fire in the hole.png').convert_alpha()
+        self.image = pygame.transform.scale(self.image, (30, 30))
         self.x = x
         self.y = y
         self.speed = 50
+        self.rect = [x, y]
+
+    def update(self, *args, **kwargs):
+        self.rect[0] += 50
 
 
 def make_card():
@@ -76,12 +84,15 @@ if __name__ == '__main__':
     menu.append_button('New Game', make_card)
     menu.append_button('Quit Game', pygame.quit)
 
-    player = Player(100, 100, 'chelspistoletom.jpg')
+    player = Player(100, 100, 'chelspistoletomprozrach.jpg')
 
     running = True
     pistolIsonMap = True
     pistolTaken = False
     text_time = 0
+
+    bullet_group = pygame.sprite.Group()
+
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -101,6 +112,8 @@ if __name__ == '__main__':
                 bullet_image = pygame.transform.scale(bullet_image, (30, 30))
                 screen.blit(bullets_text, [820, 0])
                 screen.blit(bullet_image, [870, 0])
+                bullet_group.draw(screen)
+                bullet_group.update()
                 screen.blit(player.image, player.rect)
                 keys = pygame.key.get_pressed()
                 if pistolIsonMap is True:
@@ -121,7 +134,6 @@ if __name__ == '__main__':
                     if player.bullets == 0:
                         i_need_more_bullets = font.render('I need more bullets!', True, (0, 0, 0))
                         text_cord = [player.rect[0], player.rect[1] - 50]
-                        print(text_cord)
                         x1 = player.rect[0]
                         y1 = player.rect[1] - 50
                         x2 = player.rect[0] + 10
@@ -129,7 +141,10 @@ if __name__ == '__main__':
                         screen.blit(i_need_more_bullets, text_cord)
                         text_time = pygame.time.get_ticks()
                     elif player.bullets > 0:
-                        bullet = Bullet()
+                        bullet = Bullet(player.rect[0] + 250, player.rect[1] + 147)
+                        bullet_group.add(bullet)
+                        player.bullets -= 1
+                        pygame.draw.rect(screen, (255, 255, 255), (820, 0, 850, 30))
                 if current_time - text_time > 1000 and text_time != 0:
                     text_time = 0
                     no_more_bullets = pygame.draw.rect(screen, (255, 255, 255), (0, 0, x2 + 400, y2))
@@ -137,8 +152,9 @@ if __name__ == '__main__':
                 if -80 <= player.rect[0] - x <= 80 and -80 <= player.rect[1] - y <= 80 and pistolTaken is False:
                     print('123')
                     pistolTaken = True
+                    pygame.draw.rect(screen, (255, 255, 255), (820, 0, 850, 30))
+                    print(bullets_text.get_rect())
                     player.bullets += 30
-                    pygame.draw.rect(screen, (255, 255, 255), (820, 10, 850, 20))
 
                 current_time = pygame.time.get_ticks()
         pygame.display.update()
